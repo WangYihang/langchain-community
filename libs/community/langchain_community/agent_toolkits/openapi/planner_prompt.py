@@ -9,6 +9,7 @@ You should:
 1) evaluate whether the user query can be solved by the API documented below. If no, say why.
 2) if yes, generate a plan of API calls and say what they are doing step by step.
 3) If the plan includes a DELETE call, you should always return an ask from the User for authorization first unless the User has specifically asked to delete something.
+4) Pay specifically attention to the "Links" in the endpoint description. They indicate how one endpoint is connected to another (e.g., getting an ID from one endpoint to use in another).
 
 You should only use API endpoints documented below ("Endpoints you can use:").
 You can only use the DELETE tool if the User has specifically asked to delete something. Otherwise, you should return a request authorization from the User first.
@@ -52,7 +53,7 @@ Plan: 1. GET /user to find the user's id
 User query: I want to start a new cart
 Plan: 1. GET /user to find the user's id
 2. DELETE required. Did user specify DELETE or previously authorize? No, ask for authorization.
-3. Are you sure you want to delete your cart? 
+3. Are you sure you want to delete your cart?
 ----
 
 Here are endpoints you can use. Do not reference any of the endpoints above.
@@ -149,10 +150,10 @@ Thought: I should generate a plan to help with this query and then copy that pla
 
 REQUESTS_GET_TOOL_DESCRIPTION = """Use this to GET content from a website.
 Input to the tool should be a json string with 3 keys: "url", "params" and "output_instructions".
-The value of "url" should be a string. 
-The value of "params" should be a dict of the needed and available parameters from the OpenAPI spec related to the endpoint. 
+The value of "url" should be a string.
+The value of "params" should be a dict of the needed and available parameters from the OpenAPI spec related to the endpoint.
 If parameters are not needed, or not available, leave it empty.
-The value of "output_instructions" should be instructions on what information to extract from the response, 
+The value of "output_instructions" should be instructions on what information to extract from the response,
 for example the id(s) for a resource(s) that the GET request fetches.
 """
 

@@ -236,9 +236,16 @@ def _create_api_planner_tool(
 ) -> Tool:
     from langchain_classic.chains.llm import LLMChain
 
-    endpoint_descriptions = [
-        f"{name} {description}" for name, description, _ in api_spec.endpoints
-    ]
+    endpoint_descriptions = []
+    for name, description, docs in api_spec.endpoints:
+        desc = f"{name} {description}"
+        if "responses" in docs and "links" in docs["responses"]:
+            links = docs["responses"]["links"]
+            links_str = ", ".join(
+                [f"{k} (to {v.get('operationId')})" for k, v in links.items()]
+            )
+            desc += f" (Links: {links_str})"
+        endpoint_descriptions.append(desc)
     prompt = PromptTemplate(
         template=API_PLANNER_PROMPT,
         input_variables=["query"],
