@@ -6,6 +6,8 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, cast
 
 import yaml
+from langchain_classic.agents.agent import AgentOutputParser
+from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.callbacks import BaseCallbackManager
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import BasePromptTemplate, PromptTemplate
@@ -380,6 +382,30 @@ def _create_api_controller_tool(
     )
 
 
+class RobustOpenAPIPlannerOutputParser(AgentOutputParser):
+    def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        if "Final Answer:" in text:
+            return AgentFinish(
+                {"output": text.split("Final Answer:")[-1].strip()}, text
+            )
+        # Regex for Action and Action Input
+        import re
+
+        action_match = re.search(r"Action: (.*?)[\n]*Action Input: (.*)", text, re.DOTALL)
+        if not action_match:
+            # Heuristic: If no action is found, assume it's the final answer
+            # This fixes the "Invalid Format" error when the model just answers
+            return AgentFinish({"output": text.strip()}, text)
+
+        action = action_match.group(1).strip()
+        action_input = action_match.group(2)
+        return AgentAction(action, action_input.strip(" ").strip('"'), text)
+
+    @property
+    def _type(self) -> str:
+        return "robust_openapi_planner"
+
+
 def create_openapi_agent(
     api_spec: ReducedOpenAPISpec,
     requests_wrapper: RequestsWrapper,
@@ -453,6 +479,7 @@ def create_openapi_agent(
     agent = ZeroShotAgent(
         llm_chain=LLMChain(llm=llm, prompt=prompt, memory=shared_memory),
         allowed_tools=[tool.name for tool in tools],
+        output_parser=RobustOpenAPIPlannerOutputParser(),
         **kwargs,
     )
     return AgentExecutor.from_agent_and_tools(
