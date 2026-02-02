@@ -13,6 +13,7 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import BasePromptTemplate, PromptTemplate
 from langchain_core.tools import BaseTool, Tool
 from pydantic import Field
+from typing import Union
 
 from langchain_community.agent_toolkits.openapi.planner_prompt import (
     API_CONTROLLER_PROMPT,
